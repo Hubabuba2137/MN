@@ -1,68 +1,74 @@
 #include <iostream>
-#include <math.h>
+#include <cmath>
+#include <algorithm>
 
-struct Data{
-    double iteration;
-    double begin;
-    double end;
+using namespace std;
 
-    Data(double iter, double beg, double ending){
-        iteration = iter;
-        begin = beg;
-        end = ending;
-    }
-};
-
-double func(double x){
-    return x*x + 2*x+ 5;
-}
-
-double integrate_sq(Data pos){
-
-    double s = (pos.end-pos.begin)/pos.iteration;
-    double sum =0;
-    double h=-s; //w pętli dodajemy s nawet w pierwszym kroku to tutaj odejmujemy żeby być na zero
-
-    for(int i=0; i<pos.iteration;i++){
-        h += func((pos.begin+s)+(s/2));
-    }
-    //std::cout<<h<<"\n";
-    return s*h;
-}
-
-double integrate_trap(Data pos){
-    double s = (pos.end-pos.begin)/pos.iteration; //step
+double quad_trap(double (*f)(double), double a, double b, double dx){
     double sum = 0;
-    double h=pos.begin;
-
-    for(int i=0; i<pos.iteration;i++){
-        sum += (func(h) + func(h+s))/2;
-        h +=s;
+    
+    double min_v = min(a,b);
+    double max_v = max(a,b);
+    
+    for(double i=min_v; i<max_v; i+=dx){
+        sum += ((f(i) + f(i+dx))*dx)/2;
     }
-    return sum*s;
-}
-
-double integrate_simps(Data pos){
-    double s = (pos.end-pos.begin)/pos.iteration;
-    double sum = 0;
-    double h = pos.begin;
-
-    for(int i=0; i<pos.iteration;i++){
-        sum += (func(h)+4*func((h+h+s)/2)+func(h+s))*((s)/6);
-        h +=s;
-    }
-
+    
     return sum;
 }
 
-int main(){
+double quad_simp(double (*f)(double), double a, double b, double dx){
+    double sum = 0;
+    
+    double min_v = min(a,b);
+    double max_v = max(a,b);
+    
+    for(double i=min_v; i<max_v; i+=dx){
+        sum += (f(i)+4*f((i+i+dx)/2)+f(i+dx))*((dx)/6);
+    }
+    
+    return sum;
+}
 
-    Data pos(4, 0.5, 2.5); 
+double func(double x){
+    /*
+    //x^2sin^3(x)
+    return pow(sin(x),3)*x*x;
+    */
+    
+    /*
+    //exp(x^2)(x-1)
+    return exp(x*x)*(x-1);
+    */
+    
+    
+    //sin(1/x)
+    return sin(1/x);
+    
+    
+}
 
-    std::cout<<"Metody dla sin(x): \n\tMetoda kwadratów: "<<integrate_sq(pos)
-    <<"\n\tMetoda trapezów: "<<integrate_trap(pos)<<"\n\tMetoda Simpsona: "<<integrate_simps(pos);
+double func_2(double x){
+    if(x == 0.0){
+        return 1.0;
+    }
+    else{
+        return sin(x)/x;
+    }
+}
 
 
-
+int main()
+{
+    cout<<"quad_trap"<<endl;
+    for(int i=1; i<5;i++){
+        cout<<"\t"<<quad_trap(func, 0.0, 1.0, pow(10, -i))<<endl;
+    }
+    
+    cout<<"quad_simp"<<endl;
+    for(int i=1; i<5;i++){
+        cout<<"\t"<<quad_simp(func, 0.0, 1.0, pow(10, -i))<<endl;
+    }
+    
     return 0;
 }
